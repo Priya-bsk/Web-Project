@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Mind Map Creator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jsPlumb/2.15.6/js/jsplumb.min.js"></script>
+    <style>
+        :root {
+            --pastel-blue: #AEC6CF;
+            --pastel-pink: #FFD1DC;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #F8F8FF;
+        }
+
+        .title-container {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        #mapTitle {
+            font-size: 24px;
+            padding: 10px;
+            border: 2px solid var(--pastel-blue);
+            border-radius: 5px;
+            width: 80%;
+            max-width: 500px;
+            text-align: center;
+        }
+
+        .toolbar {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        button {
+            padding: 8px 15px;
+            margin: 0 5px;
+            border: none;
+            border-radius: 5px;
+            background-color: var(--pastel-blue);
+            cursor: pointer;
+            transition: opacity 0.3s;
+        }
+
+        button:hover {
+            opacity: 0.8;
+        }
+
+        #canvas {
+            height: calc(100vh - 200px);
+            position: relative;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            margin: 20px auto;
+        }
+
+        .node {
+            position: absolute;
+            min-width: 100px;
+            padding: 10px;
+            border-radius: 8px;
+            cursor: move;
+            text-align: center;
+            background-color: var(--pastel-pink);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .node input {
+            width: 90%;
+            border: none;
+            background: transparent;
+            text-align: center;
+        }
+
+        .delete-btn {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            display: none;
+        }
+
+        .node:hover .delete-btn {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="title-container">
+        <input type="text" id="mapTitle" placeholder="Enter Mind Map Title">
+    </div>
+    
+    <div class="toolbar">
+        <button onclick="addNode()">Add Node</button>
+        <button onclick="clearCanvas()">Clear Canvas</button>
+        <button onclick="saveMap()">Save Map</button>
+    </div>
+    
+    <div id="canvas"></div>
+
+    <script>
+        let jsPlumbInstance;
+        let nodeCounter = 0;
+
+        // Initialize jsPlumb
+        jsPlumb.ready(function() {
+            jsPlumbInstance = jsPlumb.getInstance({
+                DragOptions: { cursor: 'pointer', zIndex: 2000 },
+                ConnectionOverlays: [
+                    ['Arrow', { location: 1, width: 10, length: 10 }]
+                ],
+                PaintStyle: { 
+                    strokeWidth: 2,
+                    stroke: '#AEC6CF'
+                }
+            });
+
+            jsPlumbInstance.setContainer('canvas');
+        });
+
+        function addNode() {
+            const node = document.createElement('div');
+            node.className = 'node';
+            node.id = `node${nodeCounter++}`;
+            node.style.left = '50px';
+            node.style.top = '50px';
+
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.placeholder = 'Enter text';
+            node.appendChild(input);
+
+            const deleteBtn = document.createElement('button');
+            deleteBtn.className = 'delete-btn';
+            deleteBtn.innerHTML = '×';
+            deleteBtn.onclick = function(e) {
+                e.stopPropagation();
+                deleteNode(node);
+            };
+            node.appendChild(deleteBtn);
+
+            document.getElementById('canvas').appendChild(node);
+
+            // Make node draggable
+            jsPlumbInstance.draggable(node.id, {
+                containment: 'parent'
+            });
+
+            // Make node a connection source and target
+            jsPlumbInstance.makeSource(node.id, {
+                filter: '.node',
+                anchor: 'Continuous'
+            });
+
+            jsPlumbInstance.makeTarget(node.id, {
+                filter: '.node',
+                anchor: 'Continuous'
+            });
+        }
+
+        function deleteNode(node) {
+            jsPlumbInstance.remove(node.id);
+        }
+
+        function clearCanvas() {
+            if (confirm('Are you sure you want to clear the canvas?')) {
+                jsPlumbInstance.reset();
+                document.getElementById('canvas').innerHTML = '';
+                nodeCounter = 0;
+                document.getElementById('mapTitle').value = '';
+            }
+        }
+
+        function saveMap() {
+            const title = document.getElementById('mapTitle').value;
+            const nodes = Array.from(document.getElementsByClassName('node')).map(node => ({
+                id: node.id,
+                text: node.querySelector('input').value,
+                left: node.style.left,
+                top: node.style.top
+            }));
+
+            const connections = jsPlumbInstance.getAllConnections().map(conn => ({
+                source: conn.source.id,
+                target: conn.target.id
+            }));
+
+            const data = {
+                title: title,
+                nodes: nodes,
+                connections: connections
+            };
+
+            const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'mindmap.json';
+            a.click();
+        }
+    </script>
+</body>
+</html>

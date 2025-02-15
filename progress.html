@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StudySync - Your Progress</title>
+    <style>
+        :root {
+            --primary: #a8d8ea;
+            --secondary: #aa96da;
+            --accent: #fcbad3;
+            --text: #172b4d;
+            --light-bg: #f9f9f9;
+            --sidebar-width: 250px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+
+        body {
+            background-color: var(--light-bg);
+            color: var(--text);
+        }
+
+        .dashboard {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: white;
+            padding: 2rem 1rem;
+            border-right: 1px solid #eee;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        .sidebar-logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 2rem;
+            padding: 0 1rem;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 0.8rem 1rem;
+            margin-bottom: 0.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            color: var(--text);
+            text-decoration: none;
+        }
+
+        .nav-item:hover {
+            background-color: var(--light-bg);
+        }
+
+        .nav-item.active {
+            background-color: var(--primary);
+        }
+
+        .nav-icon {
+            margin-right: 0.8rem;
+            font-size: 1.2rem;
+        }
+
+        /* Main Content Styles */
+        .main-content {
+            flex: 1;
+            margin-left: var(--sidebar-width);
+            padding: 2rem;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .user-welcome {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .profile-pic {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        /* Grid Layout for Dashboard Widgets */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .widget {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .widget-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .widget-title {
+            font-weight: bold;
+            color: var(--text);
+        }
+
+        /* Progress Bars */
+        .progress-bar {
+            height: 8px;
+            background-color: #eee;
+            border-radius: 4px;
+            margin: 0.5rem 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background-color: var(--secondary);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        /* Tasks List */
+        .task-list {
+            list-style: none;
+        }
+
+        .task-item {
+            display: flex;
+            align-items: center;
+            padding: 0.8rem 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .task-checkbox {
+            margin-right: 1rem;
+        }
+
+        .task-label {
+            flex: 1;
+        }
+
+        .task-due {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        /* Calendar Widget */
+        .calendar-widget {
+            grid-column: span 2;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 0.5rem;
+        }
+
+        .calendar-day {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .calendar-day:hover {
+            background-color: var(--light-bg);
+        }
+
+        .calendar-day.has-event {
+            background-color: var(--accent);
+            color: white;
+        }
+
+        /* Study Timer */
+        .timer-display {
+            font-size: 2rem;
+            text-align: center;
+            margin: 1rem 0;
+        }
+
+        .timer-controls {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+        }
+
+        .timer-btn {
+            padding: 0.5rem 1.5rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background-color: var(--secondary);
+            color: white;
+            transition: background-color 0.2s;
+        }
+
+        .timer-btn:hover {
+            background-color: #9785c7;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: static;
+                padding: 1rem;
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 1rem;
+            }
+
+            .calendar-widget {
+                grid-column: span 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-logo">StudySync</div>
+            <nav>
+                <a href="#" class="nav-item active">
+                    <span class="nav-icon">📊</span>
+                    Progress
+                </a>
+                <a href="task_manager.html" class="nav-item">
+                    <span class="nav-icon">✅</span>
+                    Task Manager
+                </a>
+                <a href="timer.html" class="nav-item">
+                    <span class="nav-icon">⏳</span>
+                    Timer
+                </a>
+                <a href="#" class="nav-item">
+                    <span class="nav-icon">📚</span>
+                    Courses
+                </a>
+                <a href="gpa_calc.html" class="nav-item">
+                    <span class="nav-icon">🧮</span>
+                    GPA Calculator
+                </a>
+                <a href="mood_tracker.html" class="nav-item">
+                    <span class="nav-icon">😊</span>
+                    Mood tracker
+                </a>
+                <a href="goal_setter.html" class="nav-item">
+                    <span class="nav-icon">🎯</span>
+                    Goal setter
+                </a>
+                <a href="peer_mentorship.html" class="nav-item">
+                    <span class="nav-icon">🤝</span>
+                    Peer Mentorship
+                </a>
+                <a href="study_reflection.html" class="nav-item">
+                    <span class="nav-icon">📝</span>
+                    Study Reflection
+                </a>
+                <a href="flashcard.html" class="nav-item">
+                    <span class="nav-icon">🃏</span>
+                    Flashcards
+                </a>
+                <a href="study_and_chill.html" class="nav-item">
+                    <span class="nav-icon">🎶☕</span>
+                    Study and Chill
+                </a>
+                <a href="academic_progress.html" class="nav-item">
+                    <span class="nav-icon">📈</span>
+                    Academic Progress
+                </a>
+                <a href="achievements.html" class="nav-item">
+                    <span class="nav-icon">🏆</span>
+                    Achievements
+                </a>
+                <a href="collaborative_study_groups.html" class="nav-item">
+                    <span class="nav-icon">👥</span>
+                    Study groups
+                </a>
+                <a href="exam_and_assignment_tracker.html" class="nav-item">
+                    <span class="nav-icon">📅</span>
+                    Exam and Assignment Tracker
+                </a>
+                <a href="vision_board.html" class="nav-item">
+                    <span class="nav-icon">🖍️📌</span>
+                    Interactive vision board
+                </a>
+                <a href="mind_map.html" class="nav-item">
+                    <span class="nav-icon">🧠🗺️</span>
+                    Mind map
+                </a>
+                <a href="#" class="nav-item">
+                    <span class="nav-icon">⚙️</span>
+                    Settings
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="header">
+                <div class="user-welcome">Welcome back, Alex!</div>
+                <div class="user-profile">
+                    <div class="profile-pic">A</div>
+                </div>
+            </header>
+
+            <div class="dashboard-grid">
+                <!-- Overall Progress Widget -->
+                <div class="widget">
+                    <div class="widget-header">
+                        <div class="widget-title">Overall Progress</div>
+                    </div>
+                    <div>
+                        <div>Semester Progress</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 65%"></div>
+                        </div>
+                        <div>GPA: 3.8</div>
+                    </div>
+                </div>
+
+                <!-- Study Timer Widget -->
+                <div class="widget">
+                    <div class="widget-header">
+                        <div class="widget-title">Study Timer</div>
+                    </div>
+                    <div class="timer-display">25:00</div>
+                    <div class="timer-controls">
+                        <button class="timer-btn">Start</button>
+                        <button class="timer-btn">Reset</button>
+                    </div>
+                </div>
+
+                <!-- Upcoming Tasks Widget -->
+                <div class="widget">
+                    <div class="widget-header">
+                        <div class="widget-title">Upcoming Tasks</div>
+                    </div>
+                    <ul class="task-list">
+                        <li class="task-item">
+                            <input type="checkbox" class="task-checkbox">
+                            <span class="task-label">Math Assignment</span>
+                            <span class="task-due">Due Today</span>
+                        </li>
+                        <li class="task-item">
+                            <input type="checkbox" class="task-checkbox">
+                            <span class="task-label">Physics Lab Report</span>
+                            <span class="task-due">Tomorrow</span>
+                        </li>
+                        <li class="task-item">
+                            <input type="checkbox" class="task-checkbox">
+                            <span class="task-label">History Essay</span>
+                            <span class="task-due">In 3 days</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Course Progress Widget -->
+                <div class="widget">
+                    <div class="widget-header">
+                        <div class="widget-title">Course Progress</div>
+                    </div>
+                    <div>
+                        <div>Mathematics</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 75%"></div>
+                        </div>
+                        <div>Physics</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 60%"></div>
+                        </div>
+                        <div>History</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 85%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Calendar Widget -->
+                <div class="widget calendar-widget">
+                    <div class="widget-header">
+                        <div class="widget-title">February 2025</div>
+                    </div>
+                    <div class="calendar-grid">
+                        <!-- Calendar days will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Timer functionality
+        let timeLeft = 1500; // 25 minutes in seconds
+        let timerId = null;
+
+        const timerDisplay = document.querySelector('.timer-display');
+        const [startBtn, resetBtn] = document.querySelectorAll('.timer-btn');
+
+        function updateTimerDisplay() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        startBtn.addEventListener('click', () => {
+            if (timerId === null) {
+                timerId = setInterval(() => {
+                    timeLeft--;
+                    updateTimerDisplay();
+                    if (timeLeft === 0) {
+                        clearInterval(timerId);
+                        timerId = null;
+                        alert('Time is up! Take a break.');
+                    }
+                }, 1000);
+                startBtn.textContent = 'Pause';
+            } else {
+                clearInterval(timerId);
+                timerId = null;
+                startBtn.textContent = 'Start';
+            }
+        });
+
+        resetBtn.addEventListener('click', () => {
+            clearInterval(timerId);
+            timerId = null;
+            timeLeft = 1500;
+            updateTimerDisplay();
+            startBtn.textContent = 'Start';
+        });
+
+        // Calendar setup
+        const calendarGrid = document.querySelector('.calendar-grid');
+        const daysInMonth = 28; // February 2025
+
+        for (let i = 1; i <= daysInMonth; i++) {
+            const dayElement = document.createElement('div');
+            dayElement.classList.add('calendar-day');
+            dayElement.textContent = i;
+            
+            // Add some random events
+            if ([4, 8, 15, 22].includes(i)) {
+                dayElement.classList.add('has-event');
+            }
+            
+            calendarGrid.appendChild(dayElement);
+        }
+
+        // Task checkbox functionality
+        document.querySelectorAll('.task-checkbox').forEach(checkbox => {
+            checkbox.addEventListener('change', (e) => {
+                const taskItem = e.target.closest('.task-item');
+                if (e.target.checked) {
+                    taskItem.style.opacity = '0.5';
+                    taskItem.style.textDecoration = 'line-through';
+                } else {
+                    taskItem.style.opacity = '1';
+                    taskItem.style.textDecoration = 'none';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

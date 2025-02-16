@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Courses</title>
+    <style>
+        :root {
+            --primary: #FFB5B5;
+            --secondary: #B5D8FF;
+            --accent: #B5FFD9;
+            --background: #FFF5F5;
+            --text: #4A4A4A;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+
+        body {
+            background-color: var(--background);
+            color: var(--text);
+        }
+
+        .navbar {
+            background-color: white;
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .student-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .semester-summary {
+            background-color: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-around;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .summary-item {
+            text-align: center;
+        }
+
+        .summary-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .tab {
+            padding: 0.8rem 1.5rem;
+            background-color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .tab.active {
+            background-color: var(--secondary);
+            font-weight: bold;
+        }
+
+        .courses-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .course-card {
+            background-color: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .course-header {
+            padding: 1rem;
+            color: var(--text);
+        }
+
+        .current-course .course-header {
+            background-color: var(--primary);
+        }
+
+        .completed-course .course-header {
+            background-color: var(--accent);
+        }
+
+        .course-content {
+            padding: 1rem;
+        }
+
+        .course-details {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.8rem;
+            margin-top: 1rem;
+        }
+
+        .detail-item {
+            background-color: var(--background);
+            padding: 0.8rem;
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        .grade {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary);
+            margin-top: 0.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .courses-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <h1>My Courses</h1>
+        <div class="student-info">
+            <div>Student ID: 12345</div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <section class="semester-summary">
+            <div class="summary-item">
+                <div class="summary-value">4</div>
+                <div>Current Courses</div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-value">8</div>
+                <div>Completed Courses</div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-value">36</div>
+                <div>Total Credits</div>
+            </div>
+        </section>
+
+        <div class="tabs">
+            <button class="tab active" data-tab="current">Current Courses</button>
+            <button class="tab" data-tab="completed">Completed Courses</button>
+        </div>
+
+        <div class="courses-grid" id="coursesGrid">
+            <!-- Courses will be dynamically added here -->
+        </div>
+    </div>
+
+    <script>
+        const courses = {
+            current: [
+                {
+                    title: "Advanced Programming",
+                    code: "CS301",
+                    grade: "A-",
+                    credits: 3,
+                    professor: "Dr. Smith",
+                    assignments: "12/15",
+                    attendance: "90%"
+                },
+                {
+                    title: "Data Structures",
+                    code: "CS202",
+                    grade: "B+",
+                    credits: 4,
+                    professor: "Dr. Johnson",
+                    assignments: "8/12",
+                    attendance: "85%"
+                }
+            ],
+            completed: [
+                {
+                    title: "Introduction to Programming",
+                    code: "CS101",
+                    grade: "A",
+                    credits: 3,
+                    professor: "Dr. Williams",
+                    semester: "Fall 2024",
+                    attendance: "95%"
+                },
+                {
+                    title: "Web Development",
+                    code: "CS205",
+                    grade: "A-",
+                    credits: 3,
+                    professor: "Dr. Davis",
+                    semester: "Fall 2024",
+                    attendance: "92%"
+                }
+            ]
+        };
+
+        function createCourseCard(course, type) {
+            return `
+                <div class="course-card ${type}-course">
+                    <div class="course-header">
+                        <h2>${course.title}</h2>
+                        <div>${course.code}</div>
+                    </div>
+                    <div class="course-content">
+                        <div class="course-details">
+                            <div class="detail-item">
+                                <div>Grade</div>
+                                <div class="grade">${course.grade}</div>
+                            </div>
+                            <div class="detail-item">
+                                <div>Credits</div>
+                                <div>${course.credits}</div>
+                            </div>
+                            <div class="detail-item">
+                                <div>Professor</div>
+                                <div>${course.professor}</div>
+                            </div>
+                            <div class="detail-item">
+                                <div>${type === 'current' ? 'Attendance' : 'Semester'}</div>
+                                <div>${type === 'current' ? course.attendance : course.semester}</div>
+                            </div>
+                            ${type === 'current' ? `
+                            <div class="detail-item">
+                                <div>Assignments</div>
+                                <div>${course.assignments}</div>
+                            </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderCourses(type) {
+            const coursesGrid = document.getElementById('coursesGrid');
+            coursesGrid.innerHTML = courses[type].map(course => createCourseCard(course, type)).join('');
+        }
+
+        // Tab functionality
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                renderCourses(tab.dataset.tab);
+            });
+        });
+
+        // Initial render
+        renderCourses('current');
+    </script>
+</body>
+</html>
